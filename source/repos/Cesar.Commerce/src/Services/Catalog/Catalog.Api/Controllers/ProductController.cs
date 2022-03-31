@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Catalog.Service.EventHandlers.Commands;
 using Catalog.Service.Queries;
 using Catalog.Service.Queries.DTOs;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Service.Common.Collection;
@@ -17,12 +19,14 @@ namespace Catalog.Api.Controllers
 
         private readonly ILogger<DefaultController> _logger;
         private readonly IProductQueryService _productQueryService;
+        private readonly IMediator _mediator;
 
         public ProductController(ILogger<DefaultController> logger,
-            IProductQueryService productQueryService)
+            IProductQueryService productQueryService, IMediator mediator)
         {
             _logger = logger;
             _productQueryService = productQueryService;
+            _mediator = mediator;
         }
 
         // products
@@ -46,6 +50,14 @@ namespace Catalog.Api.Controllers
             IEnumerable<int> products = null;
 
             return await _productQueryService.GetAsync(id);
+        }
+
+        // products/id
+        [HttpPost]
+        public async Task<IActionResult> Create(ProductCreateCommand command)
+        {
+            await _mediator.Publish(command);
+            return Ok();
         }
     }
 }
